@@ -1,2 +1,6 @@
 # The-Empowerment-Ecosystem
 Interconnected Paths to Women's Advancement: A Hierarchical Cluster Heatmap Analysis Using UNICEF Data
+
+This study examines factors influencing women’s labor force participation in Latin America and the Caribbean, emphasizing the role of comprehensive social policies over targeted policies on increasing educational attainment. Latin America was chosen as a case study for its recent progress in reducing gender gaps alongside persistent structural inequities that have limited access to high-quality employment. Using UNICEF data, hierarchical cluster analysis was used to explore relationships between employment, social equity, and familial responsibilities. Results indicate that while educational attainment contributes, factors such as access to maternal benefits, financial inclusion, and reduced unpaid care work have a more significant impact on women’s labor force participation. Urban areas showed higher participation rates than rural ones, emphasizing socio-cultural geographic disparities. These findings highlight the critical importance of social policies that provide childcare, economic support for mothers, and improved banking access in order to advance gender parity and foster equitable labor market participation.
+
+
