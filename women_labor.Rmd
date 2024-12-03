@@ -1,0 +1,196 @@
+---
+title: "women_labor"
+author: "rin"
+date: "2024-11-01"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(ggplot2)
+library(socviz)
+library(tidyverse)
+library(gapminder, ggridges)
+library(ggrepel)
+library(broom)
+library(GGally)
+library(ggalluvial)
+library(plotly)
+library(cowplot)
+library(ComplexHeatmap)
+library(circlize)
+library(hopach)
+library(dplyr)
+library(dendsort)
+library(plotly)
+library(viridis)
+
+```
+## Women's labor force and adjacent factors {.tabset}
+
+### notes, data cleaning and eda
+the data is from : https://data.unicef.org/resources/dataset/the-state-of-the-worlds-children-2023-statistical-tables/
+
+Preliminary cleaning was done in excel, as the column names were formatted un-intuitively 
+
+- removed excel sheets adolescent health, HIV aids, adolescent, child health, nutrition, wash, migration, breastfeeding due to excess data 
+
+- kept: demographics, child mortality, maternal and newborn health, early childhood development, education, child protection, social protection and equity, and women's econ empowerment
+
+- link to variable named as documented by UNICEF
+
+- merged sheets together in excel, cleaned any empty columns, ensured consistency in rows 
+- realized that i have to remove commas :( did this in excel 
+- used country column to as row names for ease of heat map creation
+- region info is tough -- lots of NA's across the board
+
+```{r}
+
+cleaned_SOWC_full <- read.csv("~/Downloads/cleaned_SOWC_full(1-3.csv", na.strings = c("-"))
+
+# remove empty rows at bottom of data table from excel 
+cleaned_SOWC_full <- cleaned_SOWC_full[-c(216:237),] 
+cleaned_SOWC_full <- data.frame(cleaned_SOWC_full)
+
+#smaller region focused data frame
+SOWC_regions <- cleaned_SOWC_full[c(203:215),]
+SOWC_regions <- SOWC_regions %>% mutate(across(where(is.numeric), scale))
+
+
+# moving country labels to row names for heat map 
+heattest <- remove_rownames(SOWC_regions)
+heattest <- column_to_rownames(heattest, var = "country")
+# test map
+heattest_1 <- heattest[, c(1:5)]
+Heatmap(heattest_1, name = "sowc heatmap 1", 
+        cluster_columns = FALSE)
+
+# moving country labels to full data  set 
+cleaned_SOWC_full <- remove_rownames(cleaned_SOWC_full) 
+cleaned_SOWC_full <- column_to_rownames(cleaned_SOWC_full, var = "country")
+
+
+
+
+```
+
+
+```{r}
+#full set of variables 
+sowc_women_labor <- select(cleaned_SOWC_full, "total_lf_part_rate_female", "youth_lit_rate_female", "gdp_percaptia", "child_labor_female", "materal_universal_health_2019" , "female_life_exp_2021" ,  "total_population", "child_under5_total", "finanical_inclusion_female", "ed_attan_us_female", "total_lf_part_rate_male", "rural_unemploy_female", "urban_unemploy_female", "total_unemploy_female", "unpaid_time_use_female", "mother_nb_cb", "dep_ratio_total", "ed_attan_us_male", "total_lf_part_rate_male", "youth_lit_rate_male", "total_unemploy_male", "total_fertility", "maternal_mort_ratio", "rural_lf_part_rate_female", "urban_lf_part_rate_female") 
+
+# dial in on - latin american countries ! 
+# puerto rico is part of us - guadeloup, st bart, martinique part of france
+sowc_women_labor_LA <- sowc_women_labor[c("Belize", "Costa Rica", "El Salvador", "Guatemala", "Honduras", "Mexico", "Nicaragua", "Panama", "Argentina", "Bolivia (Plurinational State of)", "Brazil", "Chile", "Colombia", "Ecuador", "Guyana", "Paraguay", "Peru", "Suriname", "Uruguay", "Venezuela (Bolivarian Republic of)", "Cuba", "Dominican Republic", "Haiti"),]
+
+#scaled 
+sowc_la_scale <- scale(sowc_women_labor_LA)
+
+# make smaller frame -- for ed attainment only 
+ed_att_fm <- select(sowc_women_labor_LA, "total_lf_part_rate_female", "ed_attan_us_male", "total_lf_part_rate_male", "youth_lit_rate_male", "total_lf_part_rate_female", "youth_lit_rate_female", "ed_attan_us_female", "total_unemploy_female", "total_unemploy_male")
+
+#scaled and na bye
+ed_att_fm <- scale(ed_att_fm)
+na_ed_att_fm <- na.omit(ed_att_fm)
+
+# data viz! 
+ed_att_DF <- select(sowc_women_labor_LA, "total_lf_part_rate_female", "youth_lit_rate_female", "ed_attan_us_female", "total_unemploy_female")
+ed_att_DF <- scale(ed_att_DF)
+ed_att_fm_d <- as.data.frame(ed_att_DF)
+
+# reshaping 
+ed_att_fm_long <- ed_att_fm_d %>%
+  mutate(Country = rownames(sowc_women_labor_LA)) %>%
+  pivot_longer(cols = -Country, names_to = "Variable", values_to = "Value")
+
+```
+
+### Educational Attainment
+
+```{r}
+
+new_column_names <- c(
+    "Labor Force Participation (F)",
+    "Secondary Education (M)",
+    "Labor Force Participation (M)",
+    "Youth Literacy Rate (M)",
+    "Youth Literacy Rate (F)",
+    "Secondary Education (F)",
+    "Unemployment Rate (F)",
+    "Unemployment Rate (M)"
+)
+
+if (length(new_column_names) == ncol(na_ed_att_fm)) {
+  colnames(na_ed_att_fm) <- new_column_names
+} 
+
+Heatmap(na_ed_att_fm,  name = "scaled legend", clustering_distance_rows = "euclidean",
+    column_title = "Employment, Educational Attainment and Latin American Women\nVariables are standardized (z-scored) to have mean = 0 and SD = 1.", row_split = 3, row_title_rot = 0, row_gap = unit(2, "mm"),  rect_gp = gpar(col = "white", lwd = 2))
+
+
+p1 <- ggplot(ed_att_fm_long, aes(x = Country, y = Value, fill = Variable)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Employment, Educational Attainment and Latin American Women",
+       subtitle = "Variables are standardized (z-scored) to have mean = 0 and SD = 1.",
+       x = "Country",
+       y = "Scaled Value") +
+  theme_minimal() +
+  coord_flip() +
+  scale_fill_viridis_d(option = "D", 
+                       name = "Variables",  
+                       labels = c("Secondary School Education Attainment Rate", "Total Labor Force Particpation", "Total Unemployment", "Youth Literacy Rate")) +  
+  theme(plot.title = element_text(hjust = 0.5),  # Center the title
+        plot.subtitle = element_text(hjust = 0.5, size = 10),  # Subtitle with the note, centered
+        plot.margin = margin(b = 30))  # Increase bottom margin for space
+
+p1
+```
+
+### Adjacent Factors 
+```{r}
+women_lf_part <- select(sowc_women_labor_LA, "total_lf_part_rate_female", "youth_lit_rate_female", "gdp_percaptia", "materal_universal_health_2019" , "total_population", "child_under5_total", "finanical_inclusion_female", "ed_attan_us_female", "unpaid_time_use_female", "mother_nb_cb", "maternal_mort_ratio","rural_lf_part_rate_female", "urban_lf_part_rate_female")
+
+women_lf_part <- scale(women_lf_part)
+women_lf_part <- na.omit(women_lf_part)
+
+hclust_result <- cutree(hclust(dist(women_lf_part, method = "euclidean")), k = 2)
+
+annotation <- HeatmapAnnotation(
+    text = anno_text("Variables are standardized (z-scored) to have mean = 0 and SD = 1.", 
+                     gp = gpar(fontsize = 10, fontface = "italic"), 
+                     just = "center"),
+    annotation_height = unit(1, "cm")
+)
+
+new_column_names <- c(
+    "Labor Force Participation",          # total_lf_part_rate_female
+    "Youth Literacy Rate",                # youth_lit_rate_female
+    "GDP per Capita",                              # gdp_percapita
+    "Maternal Health Coverage (2019)",             # materal_universal_health_2019
+    "Total Population",                            # total_population
+    "Population Under 5",                          # child_under5_total
+    "Financial Inclusion",                # finanical_inclusion_female
+    "Secondary Education Completion",     # ed_attan_us_female
+    "Unpaid Time Use",                    # unpaid_time_use_female
+    "Newborn Cash Benefits",                 # mother_nb_cb
+    "Maternal Mortality Ratio",                    # maternal_mort_ratio
+    "Rural Labor Force Participation",     # rural_lf_part_rate_female
+    "Urban Labor Force Participation"      # urban_lf_part_rate_female
+)
+
+# Ensure that the number of columns matches
+if (length(new_column_names) == ncol(women_lf_part)) {
+  colnames(women_lf_part) <- new_column_names
+}
+
+Heatmap(
+    women_lf_part, 
+    name = "scaled legend", 
+    clustering_distance_rows = "euclidean", 
+    column_title = "Adjacent Factors to Labor Force Particaption for Latin American Women\nVariables are standardized (z-scored) to have mean = 0 and SD = 1.", 
+    row_split = 2,
+    rect_gp = gpar(col = "white", lwd = 2))
+
+```
+
