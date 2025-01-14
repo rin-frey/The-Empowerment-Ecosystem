@@ -36,20 +36,18 @@ geographic location.
 Policy Implications:
 
 - Educational access alone insufficient to achieve gender parity
-Social support services crucial for enabling workforce participation
-Financial inclusion initiatives particularly important
+- Social support services crucial for enabling workforce participation
+- Financial inclusion initiatives particularly important
 
 - Rural areas require targeted assistance and policy interventions
-Urban-rural disparities need specific policy attention
+- Urban-rural disparities need specific policy attention
 
 - Banking access represents a crucial benchmark for achieving gender parity
-Financial compensation for mothers can significantly impact labor choices
+- Financial compensation for mothers can significantly impact labor choices
 
-The study concludes that achieving gender parity in labor markets requires a multi-faceted approach beyond education, 
-incorporating financial inclusion, maternal support systems, and reduction of unpaid domestic work burden. 
-The hierarchical cluster analysis revealed distinct patterns between countries with comprehensive social support systems 
-versus those without, particularly highlighting the impact of financial inclusion and maternal benefits on women's 
-workforce participation.
+The study concludes that achieving gender parity in labor markets requires a multi-faceted approach beyond education, incorporating financial inclusion, maternal support systems, and reduction of unpaid domestic work burdens. 
+
+The hierarchical cluster analysis revealed distinct patterns between countries with comprehensive social support systems versus those without, particularly highlighting the impact of financial inclusion and maternal benefits on women's workforce participation.
 
 <img width="699" alt="Screenshot 2025-01-02 at 10 42 44 AM" src="https://github.com/user-attachments/assets/f7f4a327-5545-4d36-aa9c-492911b3ced5" />
 <img width="709" alt="Screenshot 2025-01-02 at 10 42 35 AM" src="https://github.com/user-attachments/assets/4cdac83f-1161-42db-b371-76f8ce0c2af8" />
